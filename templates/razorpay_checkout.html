@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Payment - Foodie</title>
+</head>
+<body>
+
+    <h2>Complete Your Payment</h2>
+
+    <p>Order Number: #{{ order.id }}</p>
+
+    <p>
+        Amount to Pay:
+        ₹{{ order.total_amount|floatformat:2 }}
+    </p>
+
+    <form id="csrf-form">
+        {% csrf_token %}
+    </form>
+
+    <button type="button" id="pay-button">
+        Pay Securely with Razorpay
+    </button>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <script>
+        const options = {
+            key: "{{ razorpay_key_id|escapejs }}",
+            amount: "{{ amount_paise }}",
+            currency: "INR",
+            name: "Foodie",
+            description: "Food Order #{{ order.id }}",
+            order_id: "{{ razorpay_order_id|escapejs }}",
+
+            prefill: {
+                name: "{{ order.customer_name|escapejs }}",
+                contact: "{{ order.phone|escapejs }}"
+            },
+
+            handler: async function (response) {
+                const csrfToken = document.querySelector(
+                    '[name=csrfmiddlewaretoken]'
+                ).value;
+
+                const body = new URLSearchParams({
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_signature: response.razorpay_signature
+                });
+
+                try {
+                    const result = await fetch(
+                        "{% url 'verify_razorpay_payment' order.id %}",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type":
+                                    "application/x-www-form-urlencoded;charset=UTF-8",
+                                "X-CSRFToken": csrfToken
+                            },
+                            body: body.toString()
+                        }
+                    );
+
+                    const data = await result.json();
+
+                    if (!result.ok || !data.success) {
+                        alert(data.message || "Payment verification failed.");
+                        return;
+                    }
+
+                    window.location.href = data.redirect_url;
+
+                } catch (error) {
+                    alert(
+                        "Could not verify payment. Please contact support before retrying."
+                    );
+                }
+            },
+
+            theme: {
+                color: "#16a34a"
+            }
+        };
+
+        const razorpay = new Razorpay(options);
+
+        razorpay.on("payment.failed", function () {
+            alert("Payment failed. Please try again.");
+        });
+
+        document.getElementById("pay-button").onclick = function () {
+            razorpay.open();
+        };
+    </script>
+
+</body>
+</html>

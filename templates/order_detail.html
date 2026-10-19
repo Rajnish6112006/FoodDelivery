@@ -1,0 +1,133 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+</head>
+<body>
+
+<div class="order-detail-container">
+    <h1>Order Details</h1>
+
+    <div class="order-detail-card">
+        <h2>Order #{{ order.id }}</h2>
+
+        <p><strong>Order Date:</strong>
+            {{ order.created_at|date:"d M Y, h:i A" }}
+        </p>
+
+        <p><strong>Status:</strong> {{ order.status }}</p>
+        <h3>Delivery Address</h3>
+
+        <div class="delivery-address-card">
+            <p><strong>Customer:</strong> {{ order.customer_name }}</p>
+            <p><strong>Mobile:</strong> {{ order.phone }}</p>
+            <p><strong>Address:</strong> {{ order.address|linebreaksbr }}</p>
+            <p><strong>City:</strong> {{ order.city }}</p>
+            <p><strong>PIN Code:</strong> {{ order.pincode }}</p>
+        </div>
+
+        <p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
+
+        <h3>Food Items</h3>
+
+        <div class="order-items-table-wrapper">
+            <table class="order-items-table">
+                <thead>
+                    <tr>
+                        <th>Food</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order_items %}
+                    <tr>
+                        <td>{{ item.food_name }}</td>
+                        <td>₹{{ item.price|floatformat:2 }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>₹{{ item.subtotal|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">No items found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="order-detail-total">
+            Total Amount: ₹{{ order.total_amount }}
+        </h2>
+
+        <div class="order-tracking">
+            <h3>Track Your Order</h3>
+
+            <p>
+                Order Status:
+                <strong>{{ order.status }}</strong>
+            </p>
+
+            <p>
+                Order Number: #{{ order.id }}
+            </p>
+
+            <p>
+                Total Amount:
+                ₹{{ order.total_amount|floatformat:2 }}
+            </p>
+        </div>
+
+        
+        
+        <div class="tracking-box">
+            <h3>Track Your Order</h3>
+
+            <div class="tracking-steps">
+
+                <div class="step {% if order.status != 'Cancelled' %}active{% endif %}">
+                <span>1</span>
+                <p>Order Placed</p>
+        </div>
+
+        <div class="step {% if order.status == 'Preparing' or order.status == 'Out for Delivery' or order.status == 'Delivered' %}active{% endif %}">
+            <span>2</span>
+            <p>Preparing</p>
+        </div>
+
+        <div class="step {% if order.status == 'Out for Delivery' or order.status == 'Delivered' %}active{% endif %}">
+            <span>3</span>
+            <p>On the Way</p>
+        </div>
+
+        <div class="step {% if order.status == 'Delivered' %}active{% endif %}">
+            <span>4</span>
+            <p>Delivered</p>
+        </div>
+
+    </div>
+
+    {% if order.status == 'Cancelled' %}
+        <p class="cancelled">Your order has been cancelled.</p>
+    {% else %}
+        <p>Current Status: <strong>{{ order.status }}</strong></p>
+    {% endif %}
+    </div>
+
+
+
+        <a href="{% url 'my_orders' %}" class="cart-btn">
+            Back to My Orders
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

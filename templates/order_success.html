@@ -1,0 +1,45 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmed - Foodie</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<header class="navbar">
+    <a href="/" class="logo">Foodie<span>.</span></a>
+</header>
+
+<main class="container">
+    <section class="order-confirmation">
+        <h1 class="order-confirmation-title">
+            <span class="success-icon" aria-hidden="true">✓</span>
+            Order Placed Successfully!
+        </h1>
+
+        <div class="order-details">
+            <p><span>Order Number</span><strong>#{{ order.id }}</strong></p>
+            <p><span>Customer</span><strong>{{ order.customer_name }}</strong></p>
+            <p>
+                <span>Payment</span>
+                <strong>{{ order.get_payment_method_display }} ({{ order.payment_status }})</strong>
+            </p>
+            <p>
+                <span>Status</span>
+                <strong class="order-status">{{ order.status }}</strong>
+            </p>
+            <p class="order-total">
+                <span>Total</span>
+                <strong>₹{{ order.total_amount|floatformat:2 }}</strong>
+            </p>
+        </div>
+
+        <a href="/" class="primary-btn">Continue Shopping</a>
+    </section>
+</main>
+
+</body>
+</html>

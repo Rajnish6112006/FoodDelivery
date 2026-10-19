@@ -1,0 +1,164 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - Foodie</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<header class="navbar">
+    <a class="logo" href="/">Foodie<span>.</span></a>
+    <nav>
+        <a href="/">Home</a>
+        <a href="{% url 'cart' %}">My Cart</a>
+        <a href="{% url 'my_orders' %}">My Orders</a>
+    </nav>
+</header>
+
+<main class="container">
+    <h1>My Orders</h1>
+
+    {% if messages %}
+        {% for message in messages %}
+            <p class="order-message">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+
+    {% for order in orders %}
+    <section class="order-card">
+        <h2>Order #{{ order.id }}</h2>
+        <a href="{% url 'order_detail' order.id %}">
+            View Order Details
+        </a>
+
+        <p><strong>Date:</strong> {{ order.created_at }}</p>
+        <p><strong>Total:</strong> ₹{{ order.total_amount }}</p>
+        <p><strong>Payment:</strong> {{ order.payment_method }}</p>
+        <div class="delivery-address-card">
+            <h4>Delivery Address</h4>
+            <p>{{ order.address }}</p>
+            <p>{{ order.city }} - {{ order.pincode }}</p>
+            <p>Mobile: {{ order.phone }}</p>
+
+            <a href="{% url 'order_detail' order.id %}">
+                View Full Order Details
+            </a>
+        </div>
+
+        <p>
+            <strong>Order Status:</strong>
+
+            {% if order.status == "Placed" %}
+                <span class="status-placed">Placed</span>
+
+            {% elif order.status == "Preparing" %}
+                <span class="status-preparing">Preparing</span>
+
+            {% elif order.status == "Out for Delivery" %}
+                <span class="status-delivery">Out for Delivery</span>
+
+            {% elif order.status == "Delivered" %}
+                <span class="status-delivered">Delivered</span>
+
+            {% elif order.status == "Cancelled" %}
+                <span class="status-cancelled">Cancelled</span>
+
+            {% endif %}
+        </p>
+        
+        < div class="order-status-message">
+
+            {% if order.status == "Placed" %}
+                <p class="status-placed">
+               Your order has been placed successfully!
+              </p>
+
+            {% elif order.status == "Preparing" %}
+                <p class="status-preparing">
+                Your food is being prepared.
+                </p>
+
+            {% elif order.status == "Out for Delivery" %}
+                <p class="status-delivery">
+                Your order is on the way!
+                </p>
+
+            {% elif order.status == "Delivered" %}
+                <p class="status-delivered">
+                Your order has been delivered. Enjoy your meal!
+               </p>
+
+            {% elif order.status == "Cancelled" %}
+                <p class="status-cancelled">
+                Your order has been cancelled.
+                </p>
+            {% endif %}
+        </div>
+
+        {% if order.status == "Placed" %}
+        <form method="post"
+              action="{% url 'cancel_order' order.id %}">
+            {% csrf_token %}
+
+            <button type="submit"
+                    onclick="return confirm('Are you sure you want to cancel this order?');">
+                Cancel Order
+            </button>
+        </form>
+        {% endif %}
+
+        <h3>Food Items</h3>
+
+        {% for item in order.items.all %}
+        <p>
+            {{ item.food.name }}
+            × {{ item.quantity }}
+            — ₹{{ item.price }}
+        </p>
+        {% endfor %}
+
+        <div class="order-tracking">
+            <p>Order Tracking</p>
+
+            {% if order.status == "Placed" %}
+                <p>✅ Order Placed</p>
+                <p>⏳ Preparing</p>
+                <p>⏳ Out for Delivery</p>
+                <p>⏳ Delivered</p>
+
+            {% elif order.status == "Preparing" %}
+                <p>✅ Order Placed</p>
+                <p>✅ Preparing</p>
+                <p>⏳ Out for Delivery</p>
+                <p>⏳ Delivered</p>
+
+            {% elif order.status == "Out for Delivery" %}
+                <p>✅ Order Placed</p>
+                <p>✅ Preparing</p>
+                <p>✅ Out for Delivery</p>
+                <p>⏳ Delivered</p>
+
+            {% elif order.status == "Delivered" %}
+                <p>✅ Order Placed</p>
+                <p>✅ Preparing</p>
+                <p>✅ Out for Delivery</p>
+                <p>✅ Delivered</p>
+
+            {% elif order.status == "Cancelled" %}
+                <p>❌ This order has been cancelled.</p>
+            {% endif %}
+        </div>
+    </section>
+    {% empty %}
+    <p>You have not placed any orders yet.</p>
+    {% endfor %}
+
+    <a href="/" class="primary-btn">Continue Shopping</a>
+</main>
+
+</body>
+</html>

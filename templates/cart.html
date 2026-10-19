@@ -1,0 +1,104 @@
+```html
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cart - Foodie</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<header class="navbar">
+    <a class="logo" href="/">Foodie<span>.</span></a>
+    <nav>
+        <a href="/">Home</a>
+        <a href="{% url 'cart' %}">My Cart</a>
+    </nav>
+</header>
+
+<main class="container">
+    <h1>My Shopping Cart</h1>
+
+    <div class="cart-table-wrapper">
+        <table class="cart-table">
+            <thead>
+                <tr>
+                    <th scope="col">Food</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col">Subtotal</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <th scope="row">{{ item.food.name }}</th>
+                    <td>₹{{ item.food.price|floatformat:-2 }}</td>
+                    <td>
+                        <form method="post"
+                              action="{% url 'update_cart' item.food.id %}"
+                              class="cart-quantity-form"
+                              id="update-cart-{{ item.food.id }}">
+                            {% csrf_token %}
+                            <input
+                                type="number"
+                                name="quantity"
+                                value="{{ item.quantity }}"
+                                min="0"
+                                max="99"
+                                required
+                                aria-label="Quantity for {{ item.food.name }}">
+                        </form>
+                    </td>
+                    <td>₹{{ item.subtotal|floatformat:-2 }}</td>
+                    <td>
+                        <div class="cart-actions">
+                            <button type="submit" form="update-cart-{{ item.food.id }}" class="cart-action">Update</button>
+                            <form method="post" action="{% url 'remove_from_cart' item.food.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="cart-action remove-action">Remove</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="5">
+                        Your cart is empty. Go to the Home Page and add food.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            {% if items %}
+            <tfoot>
+                <tr>
+                    <th scope="row">Total</th>
+                    <td></td>
+                    <td></td>
+                    <td><strong>₹{{ total|floatformat:-2 }}</strong></td>
+                    <td></td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+
+    <div class="cart-total">
+        <a href="/" class="primary-btn">Continue Shopping</a>
+
+        {% if items %}
+        <a href="{% url 'checkout' %}" class="primary-btn">
+            Proceed to Checkout
+        </a>
+        {% endif %}
+    </div>
+</main>
+
+</body>
+</html>
+```

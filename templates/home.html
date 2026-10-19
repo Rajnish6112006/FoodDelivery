@@ -1,0 +1,197 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foodie - Online Food Delivery</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<header class="navbar">
+    <a class="logo" href="/">Foodie<span>.</span></a>
+
+    <nav>
+        <a href="/">Home</a>
+        <a href="#menu">Food Menu</a>
+        <a href="#about">About</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'my_orders' %}">My Orders</a>
+            <span>Hello, {{ user.username }}</span>
+
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}">Login</a>
+            <a href="{% url 'signup' %}">Sign Up</a>
+        {% endif %}
+    </nav>
+
+    {% if user.is_staff %}
+        <a href="/admin/" class="admin-link">Admin</a>
+    {% endif %}
+</header>
+
+<section class="hero">
+    <div class="hero-content">
+        <p class="tagline">FRESH FOOD, FAST DELIVERY</p>
+        <h1>Delicious Food<br>Delivered to You!</h1>
+        <p>Discover your favourite meals and enjoy them at home.</p>
+        <a href="#menu" class="primary-btn">Explore Menu</a>
+    </div>
+</section>
+
+<main class="container" id="menu">
+    <h2>Explore Food Categories</h2>
+
+    <div class="categories">
+        <a href="/" class="category-btn">All Food</a>
+
+        {% for category in categories %}
+        <a
+            href="/?category={{ category.id }}"
+            class="category-btn
+            {% if selected_category == category.id|stringformat:'s' %}
+                active
+            {% endif %}">
+            {{ category.name }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <form method="get" action="/" class="search-form">
+        <input
+            type="text"
+            name="q"
+            placeholder="Search pizza, burger, biryani..."
+            value="{{ search }}"
+        >
+
+        {% if selected_category %}
+        <input type="hidden" name="category"
+               value="{{ selected_category }}">
+        {% endif %}
+
+        <button type="submit">Search</button>
+    </form>
+    {% if featured_foods %}
+    <h2>Popular Food</h2>
+
+    <div class="food-grid">
+        {% for item in featured_foods %}
+        <article class="food-card">
+            {% if item.image %}
+                <img
+                    src="{{ item.image.url }}"
+                    alt="{{ item.name }}"
+                    class="food-image"
+                >
+            {% else %}
+            <div class="food-placeholder">🍽️</div>
+            {% endif %}
+
+            <div class="food-info">
+                <span class="food-category">{{ item.category.name }}</span>
+                <h3>{{ item.name }}</h3>
+                <p>{{ item.description|default:"Fresh and delicious food." }}</p>
+
+                <div class="food-bottom">
+                    <strong>₹{{ item.price }}</strong>
+                    <span class="available">Available</span>
+                </div>
+                <form method="post" action="{% url 'add_to_cart' item.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="cart-btn">Add to Cart +</button>
+                </form>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <h2>Our Food Menu</h2>
+
+    <div class="food-grid">
+        {% for item in foods %}
+        <article class="food-card">
+            {% if item.image %}
+                <img
+                    src="{{ item.image.url }}"
+                    alt="{{ item.name }}"
+                    class="food-image"
+                >
+            {% else %}
+            <div class="food-placeholder">🍽️</div>
+            {% endif %}
+
+            <div class="food-info">
+                <span class="food-category">{{ item.category.name }}</span>
+                <h3>{{ item.name }}</h3>
+                <p>{{ item.description|default:"Fresh and delicious food." }}</p>
+
+                <div class="food-bottom">
+                    <strong>₹{{ item.price }}</strong>
+                    <span class="available">Available</span>
+                </div>
+                <form method="post" action="{% url 'add_to_cart' item.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="cart-btn">Add to Cart +</button>
+                </form>
+            </div>
+        </article>
+
+        {% empty %}
+        <p>No food items found. Please add food items from the Admin Panel.</p>
+        {% endfor %}
+    </div>
+</main>
+
+
+<footer class="site-footer">
+    <div class="footer-container">
+
+        <div class="footer-column">
+            <h2>Foodie<span>.</span></h2>
+            <p>
+                Fresh food, delicious taste,
+                delivered to your door.
+            </p>
+        </div>
+
+        <div class="footer-column">
+            <h3>Quick Links</h3>
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'cart' %}">My Cart</a>
+            <a href="{% url 'my_orders' %}">My Orders</a>
+            <a href="{% url 'login' %}">Login</a>
+        </div>
+
+        <div class="footer-column">
+            <h3>Customer Support</h3>
+            <p>Need help with your order?</p>
+            <p>Check your order status in My Orders.</p>
+            <p>Delivery charges are shown at checkout.</p>
+        </div>
+
+        <div class="footer-column">
+            <h3>Payment Methods</h3>
+            <p>Cash on Delivery</p>
+            <p>Online Payment (if enabled)</p>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        <p>
+            &copy; {% now "Y" %} Foodie.
+            All rights reserved.
+        </p>
+    </div>
+</footer>
+
+
+</body>
+</html>

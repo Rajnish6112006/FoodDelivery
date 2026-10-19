@@ -1,0 +1,85 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<div class="dashboard-container">
+    <h1>Order Management Dashboard</h1>
+
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <h3>Total Orders</h3>
+            <p>{{ total_orders }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Placed</h3>
+            <p>{{ placed_orders }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Delivered</h3>
+            <p>{{ delivered_orders }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Cancelled</h3>
+            <p>{{ cancelled_orders }}</p>
+        </div>
+    </div>
+
+    <form method="get" class="dashboard-filter">
+        <label for="status">Filter by status:</label>
+        <select name="status" id="status">
+            <option value="">All Orders</option>
+            {% for value, label in status_choices %}
+                <option value="{{ value }}"
+                    {% if selected_status == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+            {% endfor %}
+        </select>
+        <button type="submit">Filter</button>
+        <a href="{% url 'order_dashboard' %}">Reset</a>
+    </form>
+
+    <div class="dashboard-table-wrapper">
+        <table class="dashboard-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Phone</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>#{{ order.id }}</td>
+                    <td>{{ order.customer_name }}</td>
+                    <td>{{ order.phone }}</td>
+                    <td>₹{{ order.total_amount }}</td>
+                    <td>{{ order.status }}</td>
+                    <td>{{ order.created_at|date:"d M Y, h:i A" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">No orders found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <a href="{% url 'home' %}">Back to Website</a>
+</div>
+
+</body>
+</html>

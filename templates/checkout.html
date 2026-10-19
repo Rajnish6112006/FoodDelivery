@@ -1,0 +1,168 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Foodie</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<header class="navbar">
+    <a href="/" class="logo">Foodie<span>.</span></a>
+    <nav>
+        <a href="/">Home</a>
+        <a href="{% url 'cart' %}">My Cart</a>
+    </nav>
+</header>
+
+<main class="container">
+    <h1>Delivery Details</h1>
+
+    {% for message in messages %}
+        <p class="error-message">{{ message }}</p>
+    {% endfor %}
+
+    <div class="checkout-layout">
+        <form method="post" class="checkout-form">
+            {% csrf_token %}
+
+            <label for="customer_name">Full Name</label>
+            <input
+                id="customer_name"
+                type="text"
+                name="customer_name"
+                maxlength="100"
+                required
+            >
+
+            <label for="phone">Mobile Number</label>
+            <input
+                id="phone"
+                type="tel"
+                name="phone"
+                inputmode="numeric"
+                pattern="[0-9]{10}"
+                maxlength="10"
+                placeholder="10-digit mobile number"
+                required
+            >
+
+            <label for="address">Full Delivery Address</label>
+            <textarea
+                id="address"
+                name="address"
+                rows="4"
+                maxlength="2000"
+                required
+            ></textarea>
+
+            <label for="city">City</label>
+            <input
+                type="text"
+                id="city"
+                name="city"
+                maxlength="100"
+                required
+            >
+
+            <label for="pincode">PIN Code</label>
+            <input
+                type="text"
+                id="pincode"
+                name="pincode"
+                maxlength="6"
+                inputmode="numeric"
+                pattern="[0-9]{6}"
+                placeholder="Enter 6-digit PIN code"
+                required
+            >
+
+            <button type="button" id="check-delivery-btn">
+                Check Delivery
+            </button>
+
+            <p id="delivery-result" aria-live="polite"></p>
+
+            <h3>Payment Method</h3>
+            <p>Cash on Delivery (COD)</p>
+
+            
+            <div class="payment-section">
+                <h3>Select Payment Method</h3>
+
+                <label class="payment-option">
+                    <input
+                        type="radio"
+                        name="payment_method"
+                        value="COD"
+                        checked
+                    >
+                    <strong>Cash on Delivery (COD)</strong>
+                    <p>Pay when your food is delivered.</p>
+                </label>
+
+                <label class="payment-option">
+                    <input
+                        type="radio"
+                        name="payment_method"
+                        value="RAZORPAY"
+                    >
+                    <strong>Online Payment</strong>
+                    <p>Pay using Razorpay Test Mode.</p>
+                </label>
+            </div>
+
+
+            <button type="submit" class="cart-btn">
+                Place Order
+            </button>
+        </form>
+
+        <section class="order-summary">
+            <h2>Order Summary</h2>
+
+            {% for item in items %}
+                <p>
+                    {{ item.food.name }} × {{ item.quantity }}
+                    <strong>₹{{ item.subtotal }}</strong>
+                </p>
+            {% endfor %}
+
+            <hr>
+            <p>Food total: <strong>₹{{ total }}</strong></p>
+            <p>Delivery charge: <strong>₹{{ delivery_charge }}</strong></p>
+            <h2>Grand total: ₹{{ grand_total }}</h2>
+        </section>
+    </div>
+</main>
+
+<script>
+document.getElementById("check-delivery-btn").addEventListener("click", async function () {
+    const pincode = document.getElementById("pincode").value.trim();
+    const result = document.getElementById("delivery-result");
+
+    if (!/^\d{6}$/.test(pincode)) {
+        result.textContent = "Please enter a valid 6-digit PIN code.";
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            "{% url 'check_delivery' %}?pincode=" + encodeURIComponent(pincode)
+        );
+        const data = await response.json();
+        result.textContent = data.message;
+
+        if (data.available) {
+            result.textContent += " Delivery charge: ₹" + data.delivery_charge;
+        }
+    } catch (error) {
+        result.textContent = "Unable to check delivery. Please try again.";
+    }
+});
+</script>
+
+</body>
+</html>
